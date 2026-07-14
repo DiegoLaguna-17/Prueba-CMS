@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass {
+    @apply bg-white bg-opacity-20 backdrop-blur-lg border border-white border-opacity-30;
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #333;
+}
