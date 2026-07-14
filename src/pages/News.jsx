@@ -15,7 +15,7 @@ export default function News() {
         
         // Extracción sencilla de frontmatter
         const titleMatch = content.match(/title:\s*"(.*?)"/);
-        const dateMatch = content.match(/date:\s*"(.*?)"/);
+        const dateMatch = content.match(/date:\s*"?([^\n"]+)"?/);
         
         const bodyContent = content.replace(/---[\s\S]*?---/, '').trim();
         const excerpt = bodyContent.substring(0, 120) + '...';
