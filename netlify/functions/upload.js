@@ -1,38 +1,41 @@
-import AWS from "aws-sdk";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-const s3 = new AWS.S3({
+const client = new S3Client({
+  region: "auto",
   endpoint: "https://1b6e35810769bb32da1401cd5f6ad91e.r2.cloudflarestorage.com",
-  accessKeyId: process.env.R2_ACCESS_KEY,
-  secretAccessKey: process.env.R2_SECRET_KEY,
-  signatureVersion: "v4",
-  region: "auto"
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY,
+    secretAccessKey: process.env.R2_SECRET_KEY,
+  },
 });
 
-export async function handler(event) {
+export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
+    const file = body.file; // base64
+    const fileName = body.name;
 
-    const file = Buffer.from(body.file, "base64");
+    const buffer = Buffer.from(file, "base64");
 
-    const fileName = `${Date.now()}-${body.filename}`;
+    await client.send(
+      new PutObjectCommand({
+        Bucket: "cms-media",
+        Key: fileName,
+        Body: buffer,
+        ContentType: "image/jpeg",
+      })
+    );
 
-    const upload = await s3.upload({
-      Bucket: "cms-media",
-      Key: fileName,
-      Body: file,
-      ContentType: body.type
-    }).promise();
+    const url = `https://pub-4cb52416ccd048d8bbd2581c34b82329.r2.dev/${fileName}`;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        url: upload.Location
-      })
+      body: JSON.stringify({ url }),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message })
+      body: err.message,
     };
   }
-}
+};
