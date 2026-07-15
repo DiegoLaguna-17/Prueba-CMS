@@ -2,7 +2,12 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "public/uploads"   # obligatorio aunque no se use
+# Registramos la librería personalizada (el nombre debe coincidir con el paso 2)
+media_library:
+  name: r2-media
+
+# Aunque uses R2, estos campos son requeridos por Decap
+media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
@@ -14,5 +19,6 @@ collections:
     fields:
       - { label: "Título", name: "title", widget: "string" }
       - { label: "Fecha", name: "date", widget: "datetime" }
-      - { label: "Imagen", name: "image", widget: "string", required: false }
+      # CAMBIO AQUÍ: de "string" a "image"
+      - { label: "Imagen", name: "image", widget: "image", required: false } 
       - { label: "Contenido", name: "body", widget: "markdown" }

@@ -27,44 +27,68 @@
     </script>
 
     <script>
-CMS.registerWidget('image', CMS.getWidget('image').control, ({ value, onChange }) => {
-  const input = document.createElement("input");
-  input.type = "file";
+  // Tu función original intacta
+  function uploadToR2(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-  input.onchange = async () => {
-    const file = input.files[0];
-    const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(",")[1];
+        try {
+          const res = await fetch("/.netlify/functions/upload", {
+            method: "POST",
+            body: JSON.stringify({
+              file: base64,
+              name: file.name,
+            }),
+          });
+          const data = await res.json();
+          resolve(data.url);
+        } catch (error) {
+          reject(error);
+        }
+      };
 
-    reader.onloadend = async () => {
-      const base64 = reader.result.split(",")[1];
+      reader.readAsDataURL(file);
+    });
+  }
 
-      const res = await fetch("/.netlify/functions/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+  // Registramos la librería personalizada en Decap
+  CMS.registerMediaLibrary({
+    name: 'r2-media',
+    init: ({ options, handleInsert }) => {
+      return {
+        show: () => {
+          // Crea un input de archivo oculto cuando el CMS pida una imagen
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          
+          input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              // Cambia el cursor para indicar que está cargando
+              document.body.style.cursor = 'wait';
+              try {
+                const url = await uploadToR2(file);
+                // Inserta la URL de R2 directamente en el CMS
+                handleInsert(url);
+              } catch (err) {
+                console.error(err);
+                alert('Error al subir la imagen a R2');
+              } finally {
+                document.body.style.cursor = 'default';
+              }
+            }
+          };
+          
+          // Simula el clic para abrir el explorador de archivos
+          input.click();
         },
-        body: JSON.stringify({
-          file: base64,
-          filename: file.name,
-          type: file.type
-        })
-      });
-
-      const data = await res.json();
-
-      console.log("UPLOAD R2:", data);
-
-      onChange(data.url); // 🔥 aquí guardamos la URL directamente
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  input.click();
-
-  return null;
-});
+        enableStandalone: () => true,
+      };
+    }
+  });
 </script>
-
   </body>
 </html>
