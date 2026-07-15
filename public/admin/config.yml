@@ -2,7 +2,8 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "public/uploads"
+media_library:
+  name: r2
 public_folder: "/uploads"
 
 collections:
