@@ -18,6 +18,7 @@ export default function News() {
         const dateMatch = content.match(/date:\s*"?([^\n"]+)"?/);
         
         const bodyContent = content.replace(/---[\s\S]*?---/, '').trim();
+        
         const excerpt = bodyContent.substring(0, 120) + '...';
 
         if (titleMatch && dateMatch) {

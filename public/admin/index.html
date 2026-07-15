@@ -27,48 +27,44 @@
     </script>
 
     <script>
-      CMS.registerMediaLibrary({
-        name: "r2",
-        init: () => {},
-        show: ({ callback }) => {
-          const input = document.createElement("input");
-          input.type = "file";
+CMS.registerWidget('image', CMS.getWidget('image').control, ({ value, onChange }) => {
+  const input = document.createElement("input");
+  input.type = "file";
 
-          input.onchange = async () => {
-            const file = input.files[0];
-            const reader = new FileReader();
+  input.onchange = async () => {
+    const file = input.files[0];
+    const reader = new FileReader();
 
-            reader.onloadend = async () => {
-              const base64 = reader.result.split(",")[1];
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(",")[1];
 
-              const res = await fetch("/.netlify/functions/upload", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  file: base64,
-                  filename: file.name,
-                  type: file.type
-                })
-              });
-
-              const data = await res.json();
-
-              console.log("UPLOAD:", data);
-
-              callback({
-                url: data.url
-              });
-            };
-
-            reader.readAsDataURL(file);
-          };
-
-          input.click();
-        }
+      const res = await fetch("/.netlify/functions/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          file: base64,
+          filename: file.name,
+          type: file.type
+        })
       });
-    </script>
+
+      const data = await res.json();
+
+      console.log("UPLOAD R2:", data);
+
+      onChange(data.url); // 🔥 aquí guardamos la URL directamente
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  input.click();
+
+  return null;
+});
+</script>
 
   </body>
 </html>
