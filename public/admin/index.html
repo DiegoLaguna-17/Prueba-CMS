@@ -4,12 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CMS - Levántate Mujer</title>
-    <!-- Incluir el widget de Netlify Identity -->
+
+    <!-- Netlify Identity -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
+
   <body>
-    <!-- Script principal de Decap CMS -->
+    <!-- Decap CMS -->
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
+    <!-- Login redirect -->
     <script>
       if (window.netlifyIdentity) {
         window.netlifyIdentity.on("init", user => {
@@ -21,5 +25,50 @@
         });
       }
     </script>
+
+    <script>
+      CMS.registerMediaLibrary({
+        name: "r2",
+        init: () => {},
+        show: ({ callback }) => {
+          const input = document.createElement("input");
+          input.type = "file";
+
+          input.onchange = async () => {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = async () => {
+              const base64 = reader.result.split(",")[1];
+
+              const res = await fetch("/.netlify/functions/upload", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  file: base64,
+                  filename: file.name,
+                  type: file.type
+                })
+              });
+
+              const data = await res.json();
+
+              console.log("UPLOAD:", data);
+
+              callback({
+                url: data.url
+              });
+            };
+
+            reader.readAsDataURL(file);
+          };
+
+          input.click();
+        }
+      });
+    </script>
+
   </body>
 </html>
